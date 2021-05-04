@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  localstack:
+    image: localstack/localstack:0.12.10
+    container_name: localstack-petclinic
+    ports:
+      - "4566:4566"
+    environment:
+      - DEFAULT_REGION=eu-west-1
+      - SERVICES=sqs,sns
+      - DEBUG="1"
+      - DATA_DIR=/tmp/localstack/data
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "localstack-vol:/tmp/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  setup-resources:
+    image: mesosphere/aws-cli:1.14.5
+    container_name: localstack-petclinic-setup
+    environment:
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: eu-west-1
+    entrypoint: /bin/sh -c
+    command: >
+      "
+        sleep 20
+        # Executing SQS
+        aws sqs create-queue --endpoint-url=http://localstack:4566 --queue-name visit_queue;
+      "
+    depends_on:
+      - localstack
+
+  mysql:
+    image: mysql:8.0.24
+    container_name: mysql-petclinic
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+      - MYSQL_USER=petclinic
+      - MYSQL_PASSWORD=petclinic
+      - MYSQL_DATABASE=petclinic
+
+  petclinic-app:
+    build:
+      context: .
+      dockerfile: petclinic-app/Dockerfile
+    container_name: petclinic-app
+    deploy:
+      resources:
+        limits:
+          cpus: 0.25
+          memory: 512M
+    environment:
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      MYSQL_URL: jdbc:mysql://mysql:3306/petclinic
+      MYSQL_USER: petclinic
+      MYSQL_PASS: petclinic
+      QUEUE_URL: http://localstack:4566/000000000000/visit_queue
+      thundra_apiKey: <YOUR_THUNDRA_APIKEY>
+      thundra_agent_application_name: petclinic-app
+      thundra_agent_trace_integrations_spring_web_path_depth: 2
+      thundra_agent_application_version: 0.1.1
+      thundra_agent_application_stage: local
+    ports:
+      - 8080:8080
+    restart: always
+
+  petclinic-notification-app:
+    build:
+      context: .
+      dockerfile: petclinic-notification-app/Dockerfile
+    container_name: petclinic-notification-app
+    deploy:
+      resources:
+        limits:
+          cpus: 0.25
+          memory: 512M
+    environment:
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      MYSQL_URL: jdbc:mysql://mysql:3306/petclinic
+      MYSQL_USER: petclinic
+      MYSQL_PASS: petclinic
+      QUEUE_URL: http://localstack:4566/000000000000/visit_queue
+      thundra_apiKey: <YOUR_THUNDRA_APIKEY>
+      thundra_agent_application_name: petclinic-notification-app
+      thundra_agent_application_version: 0.0.1
+      thundra_agent_application_stage: local
+    ports:
+      - 8081:8081
+    restart: always
+
+volumes:
+  localstack-vol:
