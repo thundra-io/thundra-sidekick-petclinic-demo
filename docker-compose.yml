@@ -63,7 +63,7 @@ services:
       MYSQL_USER: petclinic
       MYSQL_PASS: petclinic
       QUEUE_URL: http://localstack:4566/000000000000/visit_queue
-      thundra_apiKey: <YOUR_THUNDRA_APIKEY>
+      thundra_apiKey: <YOUR_THUNDRA_API_KEY>
       thundra_agent_application_name: petclinic-app
       thundra_agent_trace_integrations_spring_web_path_depth: 2
       thundra_agent_application_version: 0.1.1
@@ -89,7 +89,7 @@ services:
       MYSQL_USER: petclinic
       MYSQL_PASS: petclinic
       QUEUE_URL: http://localstack:4566/000000000000/visit_queue
-      thundra_apiKey: <YOUR_THUNDRA_APIKEY>
+      thundra_apiKey: <YOUR_THUNDRA_API_KEY>
       thundra_agent_application_name: petclinic-notification-app
       thundra_agent_application_version: 0.0.1
       thundra_agent_application_stage: local

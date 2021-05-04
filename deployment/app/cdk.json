@@ -6,6 +6,6 @@
     "@aws-cdk/core:stackRelativeExports": "true",
     "@aws-cdk/aws-ecr-assets:dockerIgnoreSupport": true,
     "@aws-cdk/aws-secretsmanager:parseOwnedSecretName": true,
-    "thundraApiKey": "<YOUR_THUNDRA_APIKEY>"
+    "thundraApiKey": "<YOUR_THUNDRA_API_KEY>"
   }
 }
